@@ -1,0 +1,136 @@
+ {include file="admindo/include/header" /}
+<div class="span9">
+    <h1>
+        Welcom
+    </h1>
+    <div class="hero-unit">
+        <p>
+            这里是AiDOMAN后台，欢迎您！<span id="username1">King</span>
+        </p>
+    </div>
+    <div class="well summary">
+        <ul>
+            <li>
+                <a href="#"><span id="BlogCount">3</span> Objects</a>
+            </li>
+            <li>
+                <a href="#"><span id="BlogTypeCount">27</span> Types</a>
+            </li>
+        </ul>
+    </div>
+   
+</div>
+</div>
+</div>
+<!-- <script src="/tp50/public/static/js/jquery.min.js"></script>
+<script src="/tp50/public/static/js/bootstrap.min.js"></script>
+<script src="/tp50/public/static/js/site.js"></script> -->
+</body>
+
+</html>
+<script>
+    $("#username1").text($.cookie('username'));
+    //更换活动标签（active）
+    $(".active").removeClass("active");
+    $(".main").addClass("active");
+
+    function callback(arr) {
+
+    }
+    //获取数据
+    $eachnum = 5;
+    $maxnum = 1;
+    
+    // 显示总条数
+    getnum("t_object", function(result) {
+        $("#BlogCount").text(result);
+    });
+    
+  
+    getnum("t_type", function(result) {
+        $("#BlogTypeCount").text(result);
+    });
+    
+
+    //获取分页最大数量
+    function getnum(tablename, callback) {
+        //post 请求
+        return $.post("/biye/public/index/admindo/selectnum", {
+            "tablename": tablename, //表名
+            "sql": ''
+        }, function(result) {
+            if (typeof callback === "function") callback(result);
+        });
+
+    }
+
+    //初始页面数
+    $page = 1;
+    //页面初始化
+    pagealert();
+    //获取分页数据
+    function getdata() {
+        //post 请求
+        $.post("/biye/public/index/admindo/select", {
+            "tablename": "t_log", //表名
+            "sql": '', //查询的条件
+            "limit": ($page - 1) * $eachnum + "," + $page * $eachnum //分页
+        }, function(result) {
+            //回掉函数处理，输出结果
+            //如果没有获取错误码
+            if (result.code != 401) {
+                $html = "";
+                //遍历结果处理数据进行输出
+                result.forEach(function(item) {
+                    $inner = "<tr>";
+                    //将每一项数据进行遍历，生成html代码
+                    $.each(item, function(key, val) {
+                        if (val != null && val.length > 100) {
+                            val = val.substring(0, 100) + "......";
+                        }
+                        $inner = $inner + "<td>" + val + "</td>"
+                    });
+                    $html += $inner;
+                });
+                $("#tbody").html($html);
+            } else {
+                alert(result.info);
+            }
+        });
+    }
+    //下一页
+    function next() {
+        $page++;
+        pagealert();
+    }
+    //上一页
+    function older() {
+        $page--;
+        pagealert();
+    }
+    // 页面变化处理
+    function pagealert() {
+        if ($page <= 1) {
+            if ($page == 1) {
+                getdata();
+            }
+            $page = 1;
+            $("#older").addClass("disabled");
+            $("#page").removeClass("disabled");
+            $("#page").text($page);
+        } else if ($page >= $maxnum) {
+            if ($page == $maxnum) {
+                getdata();
+            }
+            $page = $maxnum;
+            $("#more").addClass("disabled");
+            $("#older").removeClass("disabled");
+            $("#page").text($page);
+        } else {
+            $("#older").removeClass("disabled");
+            $("#page").removeClass("disabled");
+            $("#page").text($page);
+        }
+
+    }
+</script>

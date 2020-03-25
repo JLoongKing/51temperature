@@ -1,0 +1,68 @@
+{include file="admindo/include/header" /}
+<div class="span9">
+    <h1>
+        Type&nbsp;&nbsp;&nbsp;&nbsp;<a href="review?viewname=admindo/type/add"><strong><small  style="text-decoration:blink;font-size:small;color:teal;">Create New</small></strong></a>
+    </h1>
+    <div class="well summary">
+        <ul>
+            <li>
+                <a style="text-decoration:blink;color:teal;"> types&nbsp;&nbsp;共<span class="BlogCount" id="count">0</span>条数据&nbsp;&nbsp;&nbsp;&nbsp;新建标签</a>
+            </li>
+        </ul>
+    </div>
+    <div class="form-horizontal">
+        <div class="control-group">
+            <label class="control-label" for="inputEmail">标题</label>
+            <div class="controls">
+                <input type="text" id="title" placeholder="请填写标题">
+            </div>
+        </div>
+        
+         <!-- <button class="btn btn-large btn-block" onclick="update()" type="button">修改</button> -->
+         <div style="margin-top:20px;text-align:center;">
+            <button style="width:15%" class="btn btn-primary" onclick="update()" type="button">上传</button>
+        </div>
+    </div>
+</div>
+
+</body>
+
+</html>
+<script>
+    //更换活动标签（active）
+
+    $(".active").removeClass("active");
+
+    $("#addtype").addClass("active");
+    //获取分页最大数量
+    //post 请求
+    $.post("/biye/public/index/admindo/selectnum", {
+        "tablename": "t_type", //表名
+        "sql": ''
+    }, function (result) {
+        // 显示总条数
+        $("#count").text(result);
+
+    });
+    function update() {
+            $title = $("#title").val();
+           
+            //post 请求
+            //上传标签
+            $.post("/biye/public/index/admindo/add", {
+                "tablename": "t_type", //表名
+                "data": { 
+                    "typename": $title
+                 }, //上传数据
+            }, function (result) {
+                //回掉函数处理，输出结果
+                //如果没有获取错误码
+                if (result.code != 401) {
+                    alert(result.info);
+                    window.location.href="/biye/public/index/admindo/review?viewname=admin/type/typelist";
+                } else {
+                    alert(result.info);
+                }
+            });
+        }
+</script>

@@ -1,0 +1,200 @@
+{include file="admindo/include/header" /}
+<div class="span9">
+    <h1>
+        Video&nbsp;&nbsp;&nbsp;&nbsp;<a href="review?viewname=admin/blog/new"><strong><small  style="text-decoration:blink;font-size:small;color:teal;">Create New</small></strong></a>
+    </h1>
+    <div class="well summary">
+        <ul>
+            <li>
+                <a style="text-decoration:blink;color:teal;"> videos&nbsp;&nbsp;共<span class="BlogCount" id="count">0</span>条数据&nbsp;&nbsp;&nbsp;&nbsp;视频列表</a>
+            </li>
+        </ul>
+    </div>
+    <div class="form-horizontal">
+
+        <div class="control-group">
+            <label class="control-label" for="inputEmail">标题</label>
+            <div class="controls">
+                <input type="text" id="title" placeholder="Title">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputEmail">关键词</label>
+            <div class="controls">
+                <input type="text" id="keyword" placeholder="KeyWord">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputEmail">标签</label>
+            <div class="controls">
+                <select id="typeselet">
+
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputEmail">简介</label>
+            <div class="controls">
+                <textarea rows="3" id="summary"></textarea>
+            </div>
+        </div>
+        <div class="control-group">
+
+            <div class="control-group" >
+                <label class="control-label" for="inputEmail">视频上传</label>
+                <input type="text" id="videourl" value=""/>
+                <a href="#" target="_blank">
+                    <img id="img1" src="/tp50/public/static/img/wait.jpg" title="banner图1" alt="banner图1">
+                </a>
+         
+                    <!-- <div class="row-fluid" style="margin:0px;padding:0px;">
+                        <div class="span6" style="margin:25px auto;"> -->
+                            <div class="file-container" style="display:inline-block;position:relative;overflow: hidden;vertical-align:middle">
+                                <button class="btn btn-success fileinput-button" type="button">上传视频</button>
+                                <input type="file" class="file_img" onchange="loadFile(this.files[0],1)" style="position:absolute;top:0;left:0;font-size:34px; opacity:0">
+                                <span id="filename1" style="vertical-align: middle">未上传文件</span>
+                            </div>
+                        <!-- </div>
+                    </div> -->
+            
+    
+    
+            </div>
+
+
+        </div>
+
+
+         <!-- <button class="btn btn-large btn-block" onclick="update()" type="button">修改</button> -->
+         <div style="margin-top:20px;text-align:center;">
+            <button style="width:15%" class="btn btn-primary" onclick="update()" type="button">上传</button>
+        </div>
+    </div>
+    </body>
+
+    </html>
+    <script>
+        var ue = UE.getEditor('container', { initialFrameHeight: 400, });
+        if (GetQueryString("blogid") == null) {
+            alert("未获取到文章id无法修改！");
+            window.location.href = "/tp50/public/blog/admin/review?viewname=admin/blog/bloglist";
+        }
+        $blogid=GetQueryString("blogid");
+        gettypes();
+         //获取本篇博文信息
+        //post 请求
+        $.post("/tp50/public/blog/admin/select", {
+            "tablename": "t_blog", //表名
+            "sql": '{"id":"=,'+$blogid+'"}'
+        }, function (result) {
+            //显示博文原信息
+            $("#title").val(result[0].title);
+            $("#keyword").val(result[0].keyword);
+            $("#summary").val(result[0].summary);
+            $("#typeselet").val(result[0].typeId);
+            $("#videourl").val(result[0].content);
+
+        });
+        function loadFile(file, order) {
+        $("#filename" + order).html(file.name);
+        $("#img" + order).attr("src", "/tp50/public/static/img/load.gif");
+        var fd = new FormData();
+        fd.append("upfile", file);
+        $.ajax({
+            url: '/tp50/public/blog/fileuploader/up',
+            type: "post",
+            processData: false,
+            contentType: false,
+            data: fd,
+            success: function (result) {
+                if (result.code != 400) {
+                    alert("上传失败！");
+                    $("#img" + order).attr("src", "/tp50/public/static/img/imgfailed.jpg");
+                } else {
+                    $("#img" + order).attr("src", "/tp50/public/static/img/ok.jpg");
+                    $("#videourl").attr("value", result.url);
+                }
+            },
+            error: function (result) {
+
+                alert("上传失败！");
+                $("#img" + order).attr("src", "/tp50/public/static/img/imgfailed.jpg");
+
+            },
+        });
+
+    }
+        //获取分页最大数量
+        //post 请求
+        $.post("/tp50/public/blog/admin/selectnum", {
+            "tablename": "t_blog", //表名
+            "sql": ''
+        }, function (result) {
+            // 显示总条数
+            $("#count").text(result);
+
+        });
+       
+        //获取标签
+        //获取分页数据
+        function gettypes() {
+            //post 请求
+            $.post("/tp50/public/blog/admin/select", {
+                "tablename": "t_blogtype", //表名
+                "sql": '', //查询的条件
+                "limit": "0,50" //分页
+            }, function (result) {
+                //回掉函数处理，输出结果
+                //如果没有获取错误码
+                if (result.code != 401) {
+                    $html = "";
+                    //遍历结果处理数据进行输出
+                    result.forEach(function (item) {
+                        $inner = "";
+                        $inner = $inner + "<option value='" + item.id + "' >" + item.typeName + "</option>"
+                        $html += $inner;
+                    });
+                    $("#typeselet").html($html);
+                } else {
+                    alert(result.info);
+                }
+            });
+        }
+       // var ue = UE.getEditor('container', { initialFrameHeight: 400, });
+        function update() {
+            $title = $("#title").val();
+            $keyword = $("#keyword").val();
+            $blogtype = $("#typeselet").val();
+            $summary = $("#summary").val();
+            $content =  $("#videourl").attr("value");
+            //post 请求
+            //上传博文
+            $.post("/tp50/public/blog/admin/update", {
+                "tablename": "t_blog", //表名
+                "fieldname":"id",
+                "fieldvalue":$blogid,
+                "data": {
+                    "title": $title,
+                    "keyWord": $keyword,
+                    "typeId": $blogtype,
+                    "content": $content,
+                    "summary": $summary
+                }, //上传数据
+            }, function (result) {
+                //回掉函数处理，输出结果
+                //如果没有获取错误码
+                if (result.code != 401) {
+                    alert(result.info);
+                    window.location.href = "/tp50/public/blog/admin/review?viewname=admin/blog/bloglist";
+                } else {
+                    alert(result.info);
+                }
+            });
+        }
+
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+    </script>
